@@ -20,23 +20,21 @@ import { Component, OnInit } from '@angular/core';
       Selected date : {{ selectedYear }}-{{ selectedMonth }}-{{ selectedDay }}
     </p>
 
-    <select [(ngModel)]="selectedYear" (ngModelChange)="updateMonths()">
-      <option *ngFor="let year of years" [value]="year">{{ year }}</option>
+    <select [(ngModel)]="selectedDay">
+      <option *ngFor="let day of days" [value]="day">{{ day }}</option>
     </select>
 
     <select [(ngModel)]="selectedMonth" (ngModelChange)="updateDays()">
       <option *ngFor="let month of months" [value]="month">{{ month }}</option>
     </select>
-
-    <select [(ngModel)]="selectedDay">
-      <option *ngFor="let day of days" [value]="day">{{ day }}</option>
+    <select [(ngModel)]="selectedYear" (ngModelChange)="updateMonths()">
+      <option *ngFor="let year of years" [value]="year">{{ year }}</option>
     </select>
   `,
 })
 export class AppComponent implements OnInit {
-  minDate: Date = new Date(2020, 2 - 1, 6);
-  // maxDate: Date = new Date(2025, 11 - 1, 15);
-  maxDate: Date = new Date(2021, 3 - 1, 8);
+  minDate: Date = new Date(2024, 2 - 1, 6);
+  maxDate: Date = new Date(2025, 11 - 1, 15);
 
   selectedYear!: number;
   selectedMonth!: number;
@@ -115,41 +113,35 @@ export class AppComponent implements OnInit {
   }
 
   updateDays() {
-    const daysInMonth = this.getDaysInMonth(
-      this.selectedYear,
-      this.selectedMonth!.toString()
-    );
-
     this.days = [];
-    for (let day = 1; day <= daysInMonth; day++) {
-      const withinMinDate =
-        this.selectedYear > this.minDate.getFullYear() ||
-        (this.selectedYear == this.minDate.getFullYear() &&
-          this.selectedMonth > this.minDate.getMonth() + 1) ||
-        (this.selectedYear == this.minDate.getFullYear() &&
-          this.selectedMonth == this.minDate.getMonth() + 1 &&
-          day >= this.minDate.getDate());
 
-      const withinMaxDate =
-        this.selectedYear < this.maxDate.getFullYear() ||
-        (this.selectedYear == this.maxDate.getFullYear() &&
-          this.selectedMonth < this.maxDate.getMonth() + 1) ||
-        (this.selectedYear == this.maxDate.getFullYear() &&
-          this.selectedMonth == this.maxDate.getMonth() + 1 &&
-          day <= this.maxDate.getDate());
+    const startDay =
+      this.selectedYear == this.minDate.getFullYear() &&
+      this.selectedMonth == this.minDate.getMonth() + 1
+        ? this.minDate.getDate()
+        : 1;
 
-      if (withinMinDate && withinMaxDate) {
-        this.days.push(day);
-      }
+    const daysInMonth =
+      this.selectedYear == this.maxDate.getFullYear() &&
+      this.selectedMonth == this.maxDate.getMonth() + 1
+        ? this.maxDate.getDate()
+        : this.getDaysInMonth(
+            this.selectedYear,
+            this.selectedMonth!.toString()
+          );
+
+    for (let day = startDay; day <= daysInMonth; day++) {
+      this.days.push(day);
     }
 
-    if (this.selectedDay == null) this.selectedDay = this.days[0];
-    if (this.selectedDay > daysInMonth) {
-      this.selectedDay = daysInMonth;
-    } else if (this.selectedDay < this.minDate.getDate()) {
-      this.selectedDay = this.minDate.getDate();
-    } else if (this.selectedDay > this.maxDate.getDate()) {
-      this.selectedDay = this.maxDate.getDate();
+    if (this.selectedDay == null) {
+      this.selectedDay = this.days[0];
+    } else {
+      if (this.selectedDay > daysInMonth) {
+        this.selectedDay = daysInMonth;
+      } else if (this.selectedDay < startDay) {
+        this.selectedDay = startDay;
+      }
     }
   }
 }
